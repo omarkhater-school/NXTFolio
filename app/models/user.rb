@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_one :general_info
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   # devise :database_authenticatable, :registerable,
@@ -26,5 +27,16 @@ class User < ApplicationRecord
       #room.skip_confirmation!
 #    end
 #  end
+
+def missing_fields
+  return [] unless general_info
+
+  general_info.attributes.keys.select do |attribute|
+    value = general_info[attribute]
+    Rails.logger.info("Checking attribute: #{attribute}, value: #{value}")
+    # Consider values missing only if they are nil (but not false for booleans or empty arrays)
+    value.nil? || (value.blank? && ![false, [], {}].include?(value))
+  end
+end
 
 end

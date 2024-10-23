@@ -1,4 +1,6 @@
 class GeneralInfo < ApplicationRecord
+  belongs_to :user
+
   has_many :gallery, dependent: :destroy, foreign_key: 'GeneralInfo_id' 
   has_many :messages, dependent: :destroy
   has_many :reviews, dependent: :destroy

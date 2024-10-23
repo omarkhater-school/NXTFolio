@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_04_16_130053) do
+ActiveRecord::Schema.define(version: 2024_10_23_064454) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -137,6 +137,8 @@ ActiveRecord::Schema.define(version: 2024_04_16_130053) do
     t.date "travel_start"
     t.date "travel_end"
     t.string "travel_details"
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_general_infos_on_user_id"
   end
 
   create_table "job_infos", force: :cascade do |t|
@@ -317,6 +319,7 @@ ActiveRecord::Schema.define(version: 2024_04_16_130053) do
   add_foreign_key "comments", "galleries"
   add_foreign_key "gallery_taggings", "galleries"
   add_foreign_key "gallery_taggings", "general_infos"
+  add_foreign_key "general_infos", "users"
   add_foreign_key "messages", "general_infos"
   add_foreign_key "messages", "rooms"
   add_foreign_key "states", "countries"

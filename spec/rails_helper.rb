@@ -30,6 +30,11 @@ require 'support/factory_girl'
 # Checks for pending migration and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove this line.
 ActiveRecord::Migration.maintain_test_schema!
+Capybara.register_driver :selenium do |app|
+  Capybara::Selenium::Driver.new(app, browser: :firefox, options: ::Selenium::WebDriver::Firefox::Options.new(args: ['--headless']))
+end
+
+Capybara.javascript_driver = :selenium
 
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
@@ -61,6 +66,10 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
   config.include Rails.application.routes.url_helpers
   config.include FactoryBot::Syntax::Methods
+
+  # Warden helpers for Devise login in feature specs
+  config.include Warden::Test::Helpers, type: :feature
+  config.after(:each, type: :feature) { Warden.test_reset! }
 end
 
 #For OmniAuth integration test

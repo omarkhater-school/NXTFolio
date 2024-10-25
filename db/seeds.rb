@@ -84,34 +84,39 @@ job_names = ["Brand Owner", "Designer", "Other Creator", "Model", "Photographer"
 # # generate a few users
  puts "==> Creating fake users..."
  filenames.each do |filename|
-   name = filename.gsub(".jpg", "").split("-")
-   first_name = name[0]
-   last_name = name[1]
-   userkey = SecureRandom.hex(10)
-   login_info = LoginInfo.new
-   login_info.email = "#{first_name}.#{last_name}@example.com"
-   login_info.password = fake_password
-   login_info.password_confirmation = fake_password
-   login_info.userKey = userkey
-  login_info.save!
+  name = filename.gsub(".jpg", "").split("-")
+  first_name = name[0]
+  last_name = name[1]
+  email = "#{first_name}.#{last_name}@example.com"
+  userkey = SecureRandom.hex(10)
 
-   general_info = GeneralInfo.new
-   general_info.first_name = first_name
-   general_info.last_name = last_name
-   general_info.userKey = userkey
-   general_info.company = "TestInc"
-   general_info.industry = "Fashion"
-   general_info.job_name = job_names.sample
-   general_info.highlights = "Just a test User"
-   general_info.country = "United States"
-   general_info.state = "Texas"
-   general_info.city = "College Station"
-   general_info.emailaddr = "#{first_name}.#{last_name}@example.com"
-   general_info.profile_picture = File.open(Rails.root.join("db", "seed_files" ,filename))
-   general_info.save!
+  # Create the user first
+  user = User.create!(
+    email: email,
+    password: fake_password
+  )
 
-   puts "Creating User " + first_name + ", " + last_name + "..."
- end
+  # Now associate the user with the general_info
+  general_info = GeneralInfo.new(
+    user: user, # Associate GeneralInfo with the created user
+    first_name: first_name,
+    last_name: last_name,
+    userKey: userkey,
+    company: "TestInc",
+    industry: "Fashion",
+    job_name: job_names.sample,
+    highlights: "Just a test User",
+    country: "United States",
+    state: "Texas",
+    city: "College Station",
+    emailaddr: email,
+    profile_picture: File.open(Rails.root.join("db", "seed_files", filename))
+  )
+
+  general_info.save!
+
+  puts "Creating User #{first_name} #{last_name} with email: #{email}..."
+end
 
  puts "Creating fake follower/followee connections..."
  (1..filenames.length()).each do |i|

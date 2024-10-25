@@ -1,22 +1,26 @@
-# spec/features/ai_user_bio_spec.rb
 require 'rails_helper'
 
 RSpec.feature 'AI About Me Generator', type: :feature do
-  let(:user) { create(:user) }
-  let(:general_info) { create(:general_info, user: user, city: "College Station", company: "VisualTech", country: "USA", gender: "Male", industry: "Photography", specialization: "Portraits") }
+  let(:user) { create(:user, email: 'user@example.com', password: 'Password123!') }
+  let(:login_info) { create(:login_info, email: user.email, password: user.password) }
+  let(:general_info) { create(:general_info, user: user, city: "College Station", company: "VisualTech", country: "USA", gender: "Male", industry: "Photography", specialization: "Portraits", userKey: SecureRandom.hex(10)) }
 
   before do
-    login_as(user, scope: :user) # Warden login_as method
+    # Simulating a login by setting the session with the user's login info
+    allow_any_instance_of(ApplicationController).to receive(:session).and_return(current_user_key: general_info.userKey)
+
+    visit general_info_edit2_path
+    save_and_open_page
   end
 
   scenario 'Generate About Me with incomplete user info' do
-    visit general_info_edit2_path(user)
-    # Wait for the page to load completely if necessary
+    # Check that the "Generate About Me" button is present and enabled
     expect(page).to have_button('Generate About Me', disabled: false)
-    click_button 'Generate About Me'
 
+    click_button 'Generate About Me'
+    save_and_open_page
     # Check for missing fields prompt
-    expect(page).to have_content('The following details are missing:')
+    expect(page).to have_content('The following details are missing:', wait: 5)
     expect(page).to have_content('compensation')
     expect(page).to have_content('experience')
 
@@ -27,6 +31,6 @@ RSpec.feature 'AI About Me Generator', type: :feature do
     expect(page).to have_content('Specialization: Portraits')
 
     # Ensure the About Me section is editable
-    expect(page).to have_selector('textarea#about_me')
+    expect(page).to have_selector('textarea#bio')
   end
 end

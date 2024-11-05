@@ -149,112 +149,93 @@
    * @return {Object} The current ScrollReveal instance.
    */
   ScrollReveal.prototype.reveal = function (target, config, interval, sync) {
-    var container
-    var elements
-    var elem
-    var elemId
-    var sequence
-    var sequenceId
-
-    // No custom configuration was passed, but a sequence interval instead.
-    // let’s shuffle things around to make sure everything works.
-    if (config !== undefined && typeof config === 'number') {
-      interval = config
-      config = {}
-    } else if (config === undefined || config === null) {
-      config = {}
-    }
-
-    container = _resolveContainer(config)
-    elements = _getRevealElements(target, container)
-
+    // Step 1: Process the configuration and resolve container
+    config = _processConfig(config, interval);
+    const container = _resolveContainer(config);
+    const elements = _getRevealElements(target, container);
+  
     if (!elements.length) {
-      console.log('ScrollReveal: reveal on "' + target + '" failed, no elements found.')
-      return sr
+      console.log(`ScrollReveal: reveal on "${target}" failed, no elements found.`);
+      return sr;
     }
-
-    // Prepare a new sequence if an interval is passed.
-    if (interval && typeof interval === 'number') {
-      sequenceId = _nextUid()
-
-      sequence = sr.sequences[sequenceId] = {
-        id: sequenceId,
-        interval: interval,
-        elemIds: [],
-        active: false
-      }
-    }
-
-    // Begin main loop to configure ScrollReveal elements.
-    for (var i = 0; i < elements.length; i++) {
-      // Check if the element has already been configured and grab it from the store.
-      elemId = elements[i].getAttribute('data-sr-id')
-      if (elemId) {
-        elem = sr.store.elements[elemId]
-      } else {
-        // Otherwise, let’s do some basic setup.
-        elem = {
-          id: _nextUid(),
-          domEl: elements[i],
-          seen: false,
-          revealing: false
-        }
-        elem.domEl.setAttribute('data-sr-id', elem.id)
-      }
-
-      // Sequence only setup
-      if (sequence) {
-        elem.sequence = {
-          id: sequence.id,
-          index: sequence.elemIds.length
-        }
-
-        sequence.elemIds.push(elem.id)
-      }
-
-      // New or existing element, it’s time to update its configuration, styles,
-      // and send the updates to our store.
-      _configure(elem, config, container)
-      _style(elem)
-      _updateStore(elem)
-
-      // We need to make sure elements are set to visibility: visible, even when
-      // on mobile and `config.mobile === false`, or if unsupported.
-      if (sr.tools.isMobile() && !elem.config.mobile || !sr.isSupported()) {
-        elem.domEl.setAttribute('style', elem.styles.inline)
-        elem.disabled = true
-      } else if (!elem.revealing) {
-        // Otherwise, proceed normally.
-        elem.domEl.setAttribute('style',
-          elem.styles.inline +
-          elem.styles.transform.initial
-        )
-      }
-    }
-
-    // Each `reveal()` is recorded so that when calling `sync()` while working
-    // with asynchronously loaded content, it can re-trace your steps but with
-    // all your new elements now in the DOM.
-
-    // Since `reveal()` is called internally by `sync()`, we don’t want to
-    // record or intiialize each reveal during syncing.
+  
+    // Step 2: Handle sequence if an interval is provided
+    const sequence = interval ? _initializeSequence(interval) : null;
+  
+    // Step 3: Configure elements in a loop
+    elements.forEach((el, index) => _setupElement(el, index, config, container, sequence));
+  
+    // Step 4: Record for sync and initialize if not syncing
     if (!sync && sr.isSupported()) {
-      _record(target, config, interval)
-
-      // We push initialization to the event queue using setTimeout, so that we can
-      // give ScrollReveal room to process all reveal calls before putting things into motion.
-      // --
-      // Philip Roberts - What the heck is the event loop anyway? (JSConf EU 2014)
-      // https://www.youtube.com/watch?v=8aGhZQkoFbQ
-      if (sr.initTimeout) {
-        window.clearTimeout(sr.initTimeout)
-      }
-      sr.initTimeout = window.setTimeout(_init, 0)
+      _record(target, config, interval);
+      _scheduleInit();
     }
-
-    return sr
+  
+    return sr;
+  };
+  
+  // Helper function: Process the config and interval
+  function _processConfig(config, interval) {
+    if (config !== undefined && typeof config === 'number') {
+      return { interval: config };
+    }
+    return config || {};
   }
-
+  
+  // Helper function: Initialize a sequence if interval is provided
+  function _initializeSequence(interval) {
+    const sequenceId = _nextUid();
+    return sr.sequences[sequenceId] = {
+      id: sequenceId,
+      interval,
+      elemIds: [],
+      active: false,
+    };
+  }
+  
+  // Helper function: Setup each element with configuration and styles
+  function _setupElement(element, index, config, container, sequence) {
+    let elem = _retrieveOrCreateElement(element);
+  
+    // Sequence setup
+    if (sequence) {
+      elem.sequence = { id: sequence.id, index: sequence.elemIds.length };
+      sequence.elemIds.push(elem.id);
+    }
+  
+    _configure(elem, config, container);
+    _style(elem);
+    _updateStore(elem);
+  
+    // Apply styles based on mobile and support check
+    if (sr.tools.isMobile() && !elem.config.mobile || !sr.isSupported()) {
+      elem.domEl.setAttribute('style', elem.styles.inline);
+      elem.disabled = true;
+    } else if (!elem.revealing) {
+      elem.domEl.setAttribute('style', elem.styles.inline + elem.styles.transform.initial);
+    }
+  }
+  
+  // Helper function: Retrieve or create an element with configuration
+  function _retrieveOrCreateElement(domEl) {
+    const elemId = domEl.getAttribute('data-sr-id');
+    if (elemId) {
+      return sr.store.elements[elemId];
+    } else {
+      const elem = { id: _nextUid(), domEl, seen: false, revealing: false };
+      domEl.setAttribute('data-sr-id', elem.id);
+      return elem;
+    }
+  }
+  
+  // Helper function: Schedule the initialization with a timeout
+  function _scheduleInit() {
+    if (sr.initTimeout) {
+      window.clearTimeout(sr.initTimeout);
+    }
+    sr.initTimeout = window.setTimeout(_init, 0);
+  }
+  
   /**
    * Re-runs `reveal()` for each record stored in history, effectively capturing
    * any content loaded asynchronously that matches existing reveal set targets.
@@ -428,18 +409,14 @@
       transform.initial += ' scale(' + config.scale + ')'
       transform.target += ' scale(1)'
     }
-    if (config.rotate.x) {
-      transform.initial += ' rotateX(' + config.rotate.x + 'deg)'
-      transform.target += ' rotateX(0)'
-    }
-    if (config.rotate.y) {
-      transform.initial += ' rotateY(' + config.rotate.y + 'deg)'
-      transform.target += ' rotateY(0)'
-    }
-    if (config.rotate.z) {
-      transform.initial += ' rotateZ(' + config.rotate.z + 'deg)'
-      transform.target += ' rotateZ(0)'
-    }
+
+    ['x', 'y', 'z'].forEach(axis => {
+      if (config.rotate[axis]) {
+        transform.initial += ` rotate${axis.toUpperCase()}(${config.rotate[axis]}deg)`;
+        transform.target += ` rotate${axis.toUpperCase()}(0)`;
+      }
+    });
+    
     transform.initial += '; opacity: ' + config.opacity + ';'
     transform.target += '; opacity: ' + elem.styles.computed.opacity + ';'
   }
@@ -519,60 +496,57 @@
     })
   }
 
-  function _animate () {
-    var delayed
-    var elem
-
-    _setActiveSequences()
-
+  function _animate() {
+    _setActiveSequences();
+  
     // Loop through all elements in the store
-    sr.tools.forOwn(sr.store.elements, function (elemId) {
-      elem = sr.store.elements[elemId]
-      delayed = _shouldUseDelay(elem)
-
-      // Let’s see if we should revealand if so,
-      // trigger the `beforeReveal` callback and
-      // determine whether or not to use delay.
+    sr.tools.forOwn(sr.store.elements, (elemId) => {
+      const elem = sr.store.elements[elemId];
+      const delayed = _shouldUseDelay(elem);
+  
+      // Decide whether to reveal or reset the element
       if (_shouldReveal(elem)) {
-        elem.config.beforeReveal(elem.domEl)
-        if (delayed) {
-          elem.domEl.setAttribute('style',
-            elem.styles.inline +
-            elem.styles.transform.target +
-            elem.styles.transition.delayed
-          )
-        } else {
-          elem.domEl.setAttribute('style',
-            elem.styles.inline +
-            elem.styles.transform.target +
-            elem.styles.transition.instant
-          )
-        }
-
-        // Let’s queue the `afterReveal` callback
-        // and mark the element as seen and revealing.
-        _queueCallback('reveal', elem, delayed)
-        elem.revealing = true
-        elem.seen = true
-
-        if (elem.sequence) {
-          _queueNextInSequence(elem, delayed)
-        }
+        _handleReveal(elem, delayed);
       } else if (_shouldReset(elem)) {
-        //Otherwise reset our element and
-        // trigger the `beforeReset` callback.
-        elem.config.beforeReset(elem.domEl)
-        elem.domEl.setAttribute('style',
-          elem.styles.inline +
-          elem.styles.transform.initial +
-          elem.styles.transition.instant
-        )
-        // And queue the `afterReset` callback.
-        _queueCallback('reset', elem)
-        elem.revealing = false
+        _handleReset(elem);
       }
-    })
+    });
   }
+  
+  // Helper function: Handle revealing an element
+  function _handleReveal(elem, delayed) {
+    elem.config.beforeReveal(elem.domEl);
+  
+    const transitionStyle = delayed
+      ? elem.styles.transition.delayed
+      : elem.styles.transition.instant;
+  
+    elem.domEl.setAttribute(
+      'style',
+      elem.styles.inline + elem.styles.transform.target + transitionStyle
+    );
+  
+    _queueCallback('reveal', elem, delayed);
+    elem.revealing = true;
+    elem.seen = true;
+  
+    if (elem.sequence) {
+      _queueNextInSequence(elem, delayed);
+    }
+  }
+  
+  // Helper function: Handle resetting an element
+  function _handleReset(elem) {
+    elem.config.beforeReset(elem.domEl);
+  
+    elem.domEl.setAttribute(
+      'style',
+      elem.styles.inline + elem.styles.transform.initial + elem.styles.transition.instant
+    );
+  
+    _queueCallback('reset', elem);
+    elem.revealing = false;
+  }  
 
   function _queueNextInSequence (elem, delayed) {
     var elapsed = 0
@@ -741,7 +715,7 @@
     var elemBottom = elemTop + elemHeight
     var elemRight = elemLeft + elemWidth
 
-    return confirmBounds() || isPositionFixed()
+    return confirmBounds() || _isPositionFixed(elem)
 
     function confirmBounds () {
       // Define the element’s functional boundaries using its view factor.
@@ -756,15 +730,13 @@
       var viewBottom = scrolled.y - elem.config.viewOffset.bottom + container.height
       var viewRight = scrolled.x - elem.config.viewOffset.right + container.width
 
-      return top < viewBottom &&
-        bottom > viewTop &&
-        left < viewRight &&
-        right > viewLeft
+      return (top < viewBottom && bottom > viewTop && left < viewRight &&
+        right > viewLeft)
     }
+  }
 
-    function isPositionFixed () {
-      return (window.getComputedStyle(elem.domEl).position === 'fixed')
-    }
+  function _isPositionFixed (elem) {
+    return (window.getComputedStyle(elem.domEl).position === 'fixed');
   }
 
   /**

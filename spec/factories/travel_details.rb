@@ -1,11 +1,12 @@
+# spec/factories/travel_details.rb
 FactoryBot.define do
   factory :travel_detail do
-    profile { nil }
-    country { "MyString" }
-    state { "MyString" }
-    city { "MyString" }
-    start_date { "2024-11-06" }
-    end_date { "2024-11-06" }
-    details { "MyString" }
+    association :profile
+    country { "USA" }
+    state { "California" }
+    city { "Los Angeles" }
+    start_date { Date.today }
+    end_date { Date.today + 7.days }
+    details { "Business trip for client meetings" }
   end
 end

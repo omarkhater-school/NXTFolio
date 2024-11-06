@@ -1,8 +1,7 @@
 class SessionsController < ApplicationController
   def instagram
-    #     # This action will redirect to Instagram for authentication
-        redirect_to "/auth/instagram"
-  end
+    redirect_to "https://www.instagram.com/oauth/authorize/third_party/?client_id=453032803993121&redirect_uri=https://localhost:8080/auth/instagram/callback&scope=user_profile,user_media&response_type=code"
+  end  
   
   def create
     auth = request.env['omniauth.auth']

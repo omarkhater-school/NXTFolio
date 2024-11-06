@@ -10,10 +10,38 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_04_16_130053) do
+ActiveRecord::Schema.define(version: 2024_11_06_055810) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum", null: false
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
 
   create_table "cities", force: :cascade do |t|
     t.string "name"
@@ -155,6 +183,19 @@ ActiveRecord::Schema.define(version: 2024_04_16_130053) do
     t.string "userKey"
   end
 
+  create_table "locations", force: :cascade do |t|
+    t.bigint "profile_id", null: false
+    t.string "country"
+    t.string "state"
+    t.string "city"
+    t.float "latitude"
+    t.float "longitude"
+    t.string "location_type"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["profile_id"], name: "index_locations_on_profile_id"
+  end
+
   create_table "login_infos", id: :serial, force: :cascade do |t|
     t.string "email"
     t.string "password"
@@ -193,6 +234,34 @@ ActiveRecord::Schema.define(version: 2024_04_16_130053) do
     t.index ["reset_password_token"], name: "index_models_on_reset_password_token", unique: true
   end
 
+  create_table "professional_details", force: :cascade do |t|
+    t.bigint "profile_id", null: false
+    t.string "company"
+    t.string "industry"
+    t.string "job_name"
+    t.string "experience"
+    t.string "specialization"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["profile_id"], name: "index_professional_details_on_profile_id"
+  end
+
+  create_table "profiles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "first_name"
+    t.string "last_name"
+    t.date "date_of_birth"
+    t.string "gender"
+    t.string "phone"
+    t.text "bio"
+    t.text "highlights"
+    t.bigint "template_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["template_id"], name: "index_profiles_on_template_id"
+    t.index ["user_id"], name: "index_profiles_on_user_id"
+  end
+
   create_table "reviews", id: :serial, force: :cascade do |t|
     t.integer "rating"
     t.text "comments"
@@ -208,6 +277,15 @@ ActiveRecord::Schema.define(version: 2024_04_16_130053) do
     t.boolean "is_private", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "social_links", force: :cascade do |t|
+    t.bigint "profile_id", null: false
+    t.string "platform"
+    t.string "url"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["profile_id"], name: "index_social_links_on_profile_id"
   end
 
   create_table "specific_designers", id: :serial, force: :cascade do |t|
@@ -256,6 +334,15 @@ ActiveRecord::Schema.define(version: 2024_04_16_130053) do
     t.string "state"
   end
 
+  create_table "specific_profiles", force: :cascade do |t|
+    t.bigint "profile_id", null: false
+    t.string "type"
+    t.text "attributes_data"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["profile_id"], name: "index_specific_profiles_on_profile_id"
+  end
+
   create_table "states", force: :cascade do |t|
     t.string "name"
     t.string "state_code"
@@ -280,6 +367,19 @@ ActiveRecord::Schema.define(version: 2024_04_16_130053) do
     t.json "prof_attribute"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "travel_details", force: :cascade do |t|
+    t.bigint "profile_id", null: false
+    t.string "country"
+    t.string "state"
+    t.string "city"
+    t.date "start_date"
+    t.date "end_date"
+    t.string "details"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["profile_id"], name: "index_travel_details_on_profile_id"
   end
 
   create_table "user_activity_details", force: :cascade do |t|
@@ -309,16 +409,52 @@ ActiveRecord::Schema.define(version: 2024_04_16_130053) do
     t.string "name"
     t.text "image"
     t.string "password"
+    t.string "first_name"
+    t.string "last_name"
+    t.string "gender"
+    t.date "date_of_birth"
+    t.string "phone"
+    t.string "country"
+    t.string "state"
+    t.string "city"
+    t.float "latitude"
+    t.float "longitude"
+    t.string "company"
+    t.string "industry"
+    t.string "job_name"
+    t.string "experience"
+    t.string "specialization"
+    t.string "profile_picture"
+    t.string "cover_picture"
+    t.text "bio"
+    t.string "facebook_link"
+    t.string "linkedIn_link"
+    t.string "instagram_link"
+    t.string "personalWebsite_link"
+    t.boolean "is_admin", default: false
+    t.boolean "enabled", default: true
+    t.string "userKey"
+    t.string "highlights"
+    t.boolean "notification", default: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "cities", "states"
   add_foreign_key "comments", "galleries"
   add_foreign_key "gallery_taggings", "galleries"
   add_foreign_key "gallery_taggings", "general_infos"
+  add_foreign_key "locations", "profiles"
   add_foreign_key "messages", "general_infos"
   add_foreign_key "messages", "rooms"
+  add_foreign_key "professional_details", "profiles"
+  add_foreign_key "profiles", "templates"
+  add_foreign_key "profiles", "users"
+  add_foreign_key "social_links", "profiles"
+  add_foreign_key "specific_profiles", "profiles"
   add_foreign_key "states", "countries"
   add_foreign_key "tags", "galleries"
+  add_foreign_key "travel_details", "profiles"
 end

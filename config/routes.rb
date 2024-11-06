@@ -2,10 +2,10 @@
 Rails.application.routes.draw do
 
   #For instagram integration
-  get '/auth/instagram/callback', to: 'show_profile#instagram_create' # Handle callback
-  get '/auth/failure', to: 'show_profile#failure' # Handle authentication failure
+  get '/auth/:provider/callback', to: 'sessions#instagram_create' # Handle callback
+  get '/auth/failure', to: 'sessions#failure' # Handle authentication failure
   # Add the route for Instagram
-  get '/auth/instagram', as: :instagram_auth, to: 'show_profile#instagram'
+  get '/auth/instagram', as: :instagram_auth, to: 'sessions#instagram'
 
   # to retrive states and cities
   get 'messages', to: 'room#index'

@@ -85,30 +85,6 @@ class ShowProfileController < ApplicationController
     puts @attribute_titles.inspect
   end
 
-  def instagram
-    redirect_to "https://www.instagram.com/oauth/authorize/third_party/?client_id=453032803993121&redirect_uri=http://localhost:8080/auth/instagram/callback&scope=user_profile,user_media&response_type=code"
-  end  
-  
-  def instagram_create
-    auth = request.env['omniauth.auth']
-    user = User.find_or_create_by(uid: auth['uid']) do |u|
-      u.provider = auth['provider']
-      u.name = auth['info']['name']
-      u.image = auth['info']['image']
-    end
-
-    if user.persisted?
-      session[:user_id] = user.id
-      redirect_to root_path
-    else
-      redirect_to auth_failure_path
-    end
-  end
-
-  def failure
-    render plain: "Authentication failed"
-  end
-
   def destroy
     @gallery = Gallery.find(params[:id])
     puts @gallery

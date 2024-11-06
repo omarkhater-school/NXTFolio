@@ -1,0 +1,2 @@
+class DesignerProfile < SpecificProfile
+end

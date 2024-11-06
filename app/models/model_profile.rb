@@ -1,0 +1,2 @@
+class ModelProfile < SpecificProfile
+end

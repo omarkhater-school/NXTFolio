@@ -1,10 +1,11 @@
+# spec/factories/professional_details.rb
 FactoryBot.define do
   factory :professional_detail do
-    profile { nil }
-    company { "MyString" }
-    industry { "MyString" }
-    job_name { "MyString" }
-    experience { "MyString" }
-    specialization { "MyString" }
+    association :profile
+    company { "Tech Corp" }
+    industry { "Technology" }
+    job_name { "Software Engineer" }
+    experience { "5 years" }
+    specialization { "Backend Development" }
   end
 end

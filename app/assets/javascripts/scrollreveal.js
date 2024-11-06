@@ -163,7 +163,8 @@
     const sequence = interval ? _initializeSequence(interval) : null;
   
     // Step 3: Configure elements in a loop
-    elements.forEach((el, index) => _setupElement(el, index, config, container, sequence));
+    elements.forEach((el, index) => _setupElement({element: el, index: index, 
+      config: config, container: container, sequence: sequence}));
   
     // Step 4: Record for sync and initialize if not syncing
     if (!sync && sr.isSupported()) {
@@ -194,7 +195,7 @@
   }
   
   // Helper function: Setup each element with configuration and styles
-  function _setupElement(element, index, config, container, sequence) {
+  function _setupElement({element, index, config, container, sequence}) {
     let elem = _retrieveOrCreateElement(element);
   
     // Sequence setup
@@ -394,9 +395,7 @@
     // Let’s make sure our our pixel distances are negative for top and left.
     // e.g. origin = 'top' and distance = '25px' starts at `top: -25px` in CSS.
     if (config.origin === 'top' || config.origin === 'left') {
-      cssDistance = /^-/.test(config.distance)
-        ? config.distance.substr(1)
-        : '-' + config.distance
+      cssDistance = /^-/.test(config.distance) ? config.distance.substr(1) : '-' + config.distance
     } else {
       cssDistance = config.distance
     }

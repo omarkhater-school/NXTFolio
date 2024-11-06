@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :social_link do
-    profile { nil }
-    platform { "MyString" }
-    url { "MyString" }
+    association :profile
+    platform { "Facebook" }
+    url { "https://facebook.com/example_profile" }
   end
 end

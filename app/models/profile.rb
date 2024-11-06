@@ -6,4 +6,6 @@ class Profile < ApplicationRecord
   has_many :locations, dependent: :destroy
   has_many :travel_details, dependent: :destroy
   has_one :specific_profile, dependent: :destroy
+  validates :first_name, presence: true
+  validates :last_name, presence: true
 end

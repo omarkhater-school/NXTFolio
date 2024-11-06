@@ -67,7 +67,7 @@ group :development, :test do
   gem 'selenium-webdriver', '~> 4.8.0'
   # to debug using cucumber binding.pry
   gem 'pry'
-  
+  gem 'shoulda-matchers'
   gem 'simplecov'
   gem 'simplecov-rcov'
 end

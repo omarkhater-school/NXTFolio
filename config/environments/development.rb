@@ -76,4 +76,7 @@ Rails.application.configure do
   # Store files locally.
   config.active_storage.service = :local
 
+  #For Instagram-Integration
+  config.hosts << "9e2a-173-219-167-170.ngrok-free.app"
+
 end

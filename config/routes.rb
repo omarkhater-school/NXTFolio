@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   # Add the route for Instagram
   get '/auth/instagram', as: :instagram_auth, to: 'sessions#instagram'
 
+
   # to retrive states and cities
   get 'messages', to: 'room#index'
   get 'states/:country_id', to: 'states#index', as: 'states'

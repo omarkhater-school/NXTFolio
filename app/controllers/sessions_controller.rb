@@ -1,50 +1,65 @@
 class SessionsController < ApplicationController
   def instagram
-    redirect_to "https://www.instagram.com/oauth/authorize/third_party/?client_id=453032803993121&redirect_uri=https://localhost:8080/auth/instagram/callback&scope=user_profile,user_media&response_type=code"
+    client_id = ENV['INSTAGRAM_CLIENT_ID']
+    redirect_uri = 'https://9e2a-173-219-167-170.ngrok-free.app/auth/instagram/callback' # Use ngrok's HTTPS URL
+
+    instagram_auth_url = "https://api.instagram.com/oauth/authorize" \
+                        "?client_id=#{client_id}" \
+                        "&redirect_uri=#{CGI.escape(redirect_uri)}" \
+                        "&scope=user_profile,user_media" \
+                        "&response_type=code"
+
+    redirect_to instagram_auth_url
   end
 
   def instagram_create
-    auth = request.env['omniauth.auth']
-    puts auth
+    # auth = request.env['omniauth.auth']
     
-    # Find or initialize the user based on a key or session value
-    user_key_current = params[:user_key] || session[:current_user_key]
-    if user_key_current
-      @user = GeneralInfo.find_by(userKey: user_key_current)
-    end
+    # # Find or initialize the user based on a key or session value
+    # user_key_current = params[:user_key] || session[:current_user_key]
+    # if user_key_current
+    #   @user = GeneralInfo.find_by(userKey: user_key_current)
+    # end
 
-    # Retrieve the access token
-    puts "Auth object: #{auth.inspect}"
-    if auth && auth['credentials'] && auth['credentials']['token']
+    # # Retrieve the access token
+    # if auth && auth['credentials'] && auth['credentials']['token']
+    #   access_token = auth['credentials']['token']
+    #   @insta_posts = fetch_instagram_posts(access_token)
+    # else
+    #   # Handle the case where auth data is missing
+    #   flash[:error] = "Unable to authenticate with Instagram"
+    #   redirect_to root_path
+    # end
+    
+    # # Fetch the user's Instagram posts
+    # @insta_posts = fetch_instagram_posts(access_token)
+    
+    # # Redirect or render the profile with the posts
+    # redirect_to show_profile_path
+    auth = request.env['omniauth.auth']
+
+    if auth.present? && auth['credentials'].present?
       access_token = auth['credentials']['token']
       @insta_posts = fetch_instagram_posts(access_token)
+      # Rest of your code
     else
-      # Handle the case where auth data is missing
-      flash[:error] = "Unable to authenticate with Instagram"
+      flash[:error] = "Authentication failed. Please try again."
       redirect_to root_path
     end
-    
-    # Fetch the user's Instagram posts
-    @insta_posts = fetch_instagram_posts(access_token)
-    
-    # Redirect or render the profile with the posts
-    redirect_to show_profile_path
   end
 
   private
 
   # Helper method to fetch posts using Instagram Graph API
   def fetch_instagram_posts(access_token)
-    url = URI("https://graph.instagram.com/me/media?fields=id,caption,media_url,media_type,permalink,timestamp&access_token=#{access_token}")
-    response = Net::HTTP.get(url)
-    parsed_response = JSON.parse(response)
-    
-    if parsed_response['data']
-      parsed_response['data']
-    else
-      [] # Return an empty array if no posts found
-    end
-  end
+              # Use a gem like 'instagram' or make HTTP requests to the Instagram API
+      client = Instagram.client(access_token: access_token)
+      client.user_recent_media
+    rescue Instagram::Error => e
+      Rails.logger.error "Instagram API error: #{e.message}"
+      flash[:error] = "Failed to fetch Instagram posts. Please try again later."
+      []
+        end
 
   def failure
     render plain: "Authentication failed"

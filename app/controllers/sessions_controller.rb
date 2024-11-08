@@ -14,7 +14,15 @@ class SessionsController < ApplicationController
     end
 
     # Retrieve the access token
-    access_token = auth['credentials']['token']
+    puts "Auth object: #{auth.inspect}"
+    if auth && auth['credentials'] && auth['credentials']['token']
+      access_token = auth['credentials']['token']
+      @insta_posts = fetch_instagram_posts(access_token)
+    else
+      # Handle the case where auth data is missing
+      flash[:error] = "Unable to authenticate with Instagram"
+      redirect_to root_path
+    end
     
     # Fetch the user's Instagram posts
     @insta_posts = fetch_instagram_posts(access_token)

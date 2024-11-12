@@ -1,6 +1,6 @@
 # Sign in and up Feature
 
-Feature: Login and sign up
+Feature: Login and Sign Up with Email Verification and Password Validation
   As a fashion industry professional
   So that I can share my profile with other fashion industry professionals
   I want to create and login my account with Facebook or Google
@@ -192,3 +192,24 @@ Feature: Login and sign up
   #  When I follow "Sign in/up button
   #  And I press "facebook" button
   #  Then My username should appear in the landing page
+
+  # Password Requirement Scenarios
+Scenario: New user attempts to create an account with a short password
+  Given I am on the login page
+  When I fill in the following:
+    | sign_up_email    | newuser@example.com |
+    | sign_up_password | Short1!             |
+    | sign_up_confirm  | Short1!             |
+  And I click on "SIGN UP"
+  Then I should see "Password must be at least 8 characters long"
+
+Scenario: New user attempts to create an account with mismatched passwords
+  Given I am on the login page
+  When I fill in the following:
+    | sign_up_email    | newuser@example.com |
+    | sign_up_password | ValidPass123!       |
+    | sign_up_confirm  | DifferentPass123!   |
+  And I click on "SIGN UP"
+  Then I should see "Passwords do not match"
+
+

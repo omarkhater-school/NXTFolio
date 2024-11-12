@@ -212,4 +212,21 @@ Scenario: New user attempts to create an account with mismatched passwords
   And I click on "SIGN UP"
   Then I should see "Passwords do not match"
 
+Scenario: New user attempts to create an account with a weak password
+  Given I am on the login page
+  When I fill in the following:
+    | sign_up_email    | newuser@example.com |
+    | sign_up_password | password123         |
+    | sign_up_confirm  | password123         |
+  And I click on "SIGN UP"
+  Then I should see "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
 
+Scenario: New user successfully creates an account with a valid password
+  Given I am on the login page
+  When I fill in the following:
+    | sign_up_email    | newuser@example.com |
+    | sign_up_password | ValidPass123!       |
+    | sign_up_confirm  | ValidPass123!       |
+  And I click on "SIGN UP"
+  Then I should not see any password-related error messages
+  And I should see "Please check your email for authentication"

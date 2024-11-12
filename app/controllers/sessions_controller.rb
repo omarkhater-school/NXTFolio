@@ -1,49 +1,48 @@
 class SessionsController < ApplicationController
   def instagram
     client_id = ENV['INSTAGRAM_CLIENT_ID']
-    redirect_uri = 'https://9e2a-173-219-167-170.ngrok-free.app/auth/instagram/callback' # Use ngrok's HTTPS URL
+    redirect_uri = 'https://24ca-173-219-167-170.ngrok-free.app/auth/instagram/callback' # Use ngrok's HTTPS URL
 
     instagram_auth_url = "https://api.instagram.com/oauth/authorize" \
-                        "?client_id=#{client_id}" \
-                        "&redirect_uri=#{CGI.escape(redirect_uri)}" \
-                        "&scope=user_profile,user_media" \
-                        "&response_type=code"
+    "?client_id=#{client_id}" \
+    "&redirect_uri=#{CGI.escape(redirect_uri)}" \
+    "&scope=user_profile,user_media" \
+    "&response_type=code"
 
     redirect_to instagram_auth_url
   end
 
   def instagram_create
-    # auth = request.env['omniauth.auth']
-    
-    # # Find or initialize the user based on a key or session value
-    # user_key_current = params[:user_key] || session[:current_user_key]
-    # if user_key_current
-    #   @user = GeneralInfo.find_by(userKey: user_key_current)
-    # end
-
-    # # Retrieve the access token
-    # if auth && auth['credentials'] && auth['credentials']['token']
-    #   access_token = auth['credentials']['token']
-    #   @insta_posts = fetch_instagram_posts(access_token)
-    # else
-    #   # Handle the case where auth data is missing
-    #   flash[:error] = "Unable to authenticate with Instagram"
-    #   redirect_to root_path
-    # end
-    
-    # # Fetch the user's Instagram posts
-    # @insta_posts = fetch_instagram_posts(access_token)
-    
-    # # Redirect or render the profile with the posts
-    # redirect_to show_profile_path
     auth = request.env['omniauth.auth']
 
     if auth.present? && auth['credentials'].present?
       access_token = auth['credentials']['token']
-      @insta_posts = fetch_instagram_posts(access_token)
-      # Rest of your code
+      
+      # Find or create user based on Instagram data
+      user_key_current = session[:current_user_key]
+      @user = GeneralInfo.find_by(userKey: user_key_current)
+  
+      if @user
+        # Update user's Instagram access token
+        @user.update(instagram_access_token: access_token)
+        
+        # Fetch Instagram posts
+        @insta_posts = fetch_instagram_posts(access_token)
+        
+        # Save Instagram posts to user's record (assuming you have a relation set up)
+        @user.update(instagram_photos: @insta_posts)
+  
+        # Redirect to show_profile with success message
+        flash[:success] = "Instagram account connected successfully!"
+        redirect_to show_profile_path(user_key: @user.userKey)
+      else
+        # Handle case where user is not found
+        flash[:error] = "User not found. Please log in and try again."
+        redirect_to login_path
+      end
     else
-      flash[:error] = "Authentication failed. Please try again."
+      # Handle authentication failure
+      flash[:error] = "Instagram authentication failed. Please try again."
       redirect_to root_path
     end
   end

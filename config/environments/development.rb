@@ -77,6 +77,6 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   #For Instagram-Integration
-  config.hosts << "9e2a-173-219-167-170.ngrok-free.app"
+  config.hosts << /.*\.ngrok-free\.app/
 
 end

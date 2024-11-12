@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   get '/auth/failure', to: 'sessions#failure' # Handle authentication failure
   # Add the route for Instagram
   get '/auth/instagram', as: :instagram_auth, to: 'sessions#instagram'
+  get '/show_profile', to: 'show_profile#show_profile', as: :show_profile
+  get '/auth/instagram/callback', to: proc { |env| [200, {}, ["Auth callback reached"]] }
 
 
   # to retrive states and cities

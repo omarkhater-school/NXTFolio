@@ -9,6 +9,9 @@ module NavigationHelpers
 
       when /^the home page$/
         root_path
+      
+      when /^the signup page$/i
+        new_user_registration_path
 
       when /^the landing page$/
         root_path

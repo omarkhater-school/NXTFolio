@@ -32,8 +32,8 @@ if Rails.configuration.use_remote_webdriver
   end
 
   # make the driver we just registered our default driver
-  Capybara.default_driver = :selenium_firefox
-  # Capybara.javascript_driver = :selenium
+  Capybara.default_driver = :selenium
+  Capybara.javascript_driver = :selenium_firefox
 
   # set the default URL for our tests
   #Capybara.server_host = "0.0.0.0"

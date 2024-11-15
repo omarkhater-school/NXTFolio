@@ -55,11 +55,12 @@ Rails.application.routes.draw do
   get '/galleries/:id/tags', to: 'galleries#add_tag', as: 'gallery_add_tag'
   post '/galleries/:id/tags', to: 'galleries#create_tag', as: 'gallery_create_tag'
 
+  
   #get 'template/create'
   #post 'template/create' => 'template#create', :as => 'template/create1'
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   #devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
-  devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
+  devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" },  sign_out_via: [:delete]
   get 'general_info_list' => 'general_info#list', :as => 'general_info_list'
   get 'general_info_save' => 'general_info#save', :as => 'general_info_save'
   get 'general_info/edit' => 'general_info#edit', :as => 'general_info/edit'
@@ -169,7 +170,8 @@ Rails.application.routes.draw do
   get 'password/reset/edit', to: 'password_resets#edit'
   patch 'password/reset/edit', to: 'password_resets#update'
 
-  # Defines the root path route ("/")
+  
+    # Defines the root path route ("/")
   # root "articles#index"
   get 'chat', to: 'chat#index'
   post 'chat', to: 'chat#chat'
@@ -203,7 +205,10 @@ end
   resources :job_search
   root 'application#index'
 
- 
+  devise_scope :user do
+    get '/users/sign_out', to: 'devise/sessions#destroy'
+  end
+  
 
 end
 

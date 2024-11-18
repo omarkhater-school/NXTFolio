@@ -103,6 +103,7 @@ gem "omniauth-rails_csrf_protection"
 gem 'devise'
 gem 'omniauth-facebook'
 gem 'omniauth-google-oauth2'
+gem 'omniauth-linkedin-oauth2'
 gem 'city-state'
 gem 'geocoder'
 

@@ -7,6 +7,9 @@ Rails.application.routes.draw do
   post 'general_info/generate_about_me', to: 'general_info#generate_about_me', as: :generate_about_me
 
   post '/dm/:id', to: 'room#create_message'
+  
+  get '/auth/:provider/callback', to: 'linkedin_profiles#create'
+  resources :linkedin_profiles, only: [:index]
 
   get '/dm', to: 'room#show'
 

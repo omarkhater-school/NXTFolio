@@ -3,6 +3,8 @@ class GeneralInfo < ApplicationRecord
   has_many :messages, dependent: :destroy
   has_many :reviews, dependent: :destroy
   has_one :login_info
+  # app/models/general_info.rb
+  belongs_to :user
 
   # For follow feature
   has_many(:follows, :foreign_key => :followee, :dependent => :destroy)
@@ -40,7 +42,7 @@ class GeneralInfo < ApplicationRecord
   mount_uploaders :gallery_pictures, GalleryUploader
 
   geocoded_by :address
-  after_validation :geocode
+  after_validation :safe_geocode
 
   def address
     [city, state, country].compact.join(", ")
@@ -395,6 +397,25 @@ class GeneralInfo < ApplicationRecord
                     .or(@filteredUsers1.where('travel_start < ?', Date.today).where('travel_end > ?', Date.today) ) )
           
     return @filteredUsers.or(@filteredUsers1)
+  end
+
+  private
+  def safe_geocode
+    begin
+      geocode
+    rescue Geocoder::OverQueryLimitError
+      Rails.logger.error "Geocoding failed: Over query limit"
+      errors.add(:base, "Location services are temporarily unavailable due to usage limits.")
+    rescue Geocoder::RequestDenied
+      Rails.logger.error "Geocoding failed: Request denied (API key issue)"
+      errors.add(:base, "Location services are currently unavailable. Please check your location input or try again later.")
+    rescue Geocoder::InvalidRequest
+      Rails.logger.error "Geocoding failed: Invalid request"
+      errors.add(:base, "Invalid location data provided. Please check your input.")
+    rescue JSON::ParserError, StandardError => e
+      Rails.logger.error "Unexpected error during geocoding: #{e.message}"
+      errors.add(:base, "An error occurred while verifying the location. Please try again later.")
+    end
   end
 end
 

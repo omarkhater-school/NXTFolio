@@ -59,8 +59,11 @@ Rails.application.routes.draw do
   #get 'template/create'
   #post 'template/create' => 'template#create', :as => 'template/create1'
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
-  #devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" }
-  devise_for :users, :controllers => { :omniauth_callbacks => "users/omniauth_callbacks" },  sign_out_via: [:delete]
+  devise_for :users, controllers: { 
+    omniauth_callbacks: 'users/omniauth_callbacks', 
+    confirmations: 'users/confirmations' 
+  },  sign_out_via: [:delete]
+  
   get 'general_info_list' => 'general_info#list', :as => 'general_info_list'
   get 'general_info_save' => 'general_info#save', :as => 'general_info_save'
   get 'general_info/edit' => 'general_info#edit', :as => 'general_info/edit'
@@ -144,7 +147,7 @@ Rails.application.routes.draw do
   get 'search_profile/search_specific_model' => 'search_profile#search_specific_model', :as => 'search_profile/search_specific_model'
   get 'search_profile/search_specific_photographer' => 'search_profile#search_specific_photographer', :as => 'search_profile/search_specific_photographer'
   get 'search_profile/show_profile/:id' => 'search_profile#show_profile', :as => 'search_profile/show_profile'
-  get 'add_profession' => 'template#index', :as => 'template'
+  # get 'add_profession' => 'template#index', :as => 'template'
   post '/' => 'general_info#index', :as => 'general_info_index_post'
 
   get 'application/index' => 'application#index', :as => 'application/index'

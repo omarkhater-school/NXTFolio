@@ -81,6 +81,11 @@ group :development do
   gem 'spring-watcher-listen'
   gem 'mailcatcher'
 end
+
+group :test do
+  gem 'email_spec'
+end
+
 # to generate seed data for testing
 gem 'faker'
 

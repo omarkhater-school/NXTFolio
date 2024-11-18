@@ -2,42 +2,47 @@ require File.expand_path(File.join(File.dirname(__FILE__), "..", "support", "pat
 
 Given(/the following users exist/) do |users_table|
   users_table.hashes.each do |user|
+    # Split name into first and last name
     name = user['name'].split(".")
+    first_name = name[0]
+    last_name = name[1]
     fake_password = user['password']
     job = user['job']
 
-    first_name = name[0]
-    last_name = name[1]
-    userkey = SecureRandom.hex(10)
-    login_info = LoginInfo.new
-    login_info.email = "#{first_name}.#{last_name}@example.com"
-    login_info.password = fake_password
-    login_info.password_confirmation = fake_password
-    login_info.userKey = userkey
-    login_info.save!
+    # Create a User record
+    user_record = User.create!(
+      email: "#{first_name}.#{last_name}@example.com",
+      password: fake_password,
+      password_confirmation: fake_password
+    )
 
+    # Set values from the user hash, with defaults if values are missing
+    company = user['company'] || "TestInc"        # Default company if missing
+    industry = user['industry'] || "Fashion"      # Default industry if missing
+    country = user['country'] || "United States"  # Default country if missing
+    city = user['city'] || "Unknown City"         # Default city if missing
+    state = user['state'] || "Unknown State"      # Default state if missing
+    highlights = user['highlights'] || "N/A"      # Default highlights if missing
 
-    general_info = GeneralInfo.new
-    #general_info.profession = user['profession']
-    general_info.id = user['id']
-    general_info.first_name = first_name
-    general_info.last_name = last_name
-    general_info.userKey = userkey
-    general_info.company = "TestInc"
-    general_info.industry = "Fashion"
-    general_info.job_name = job
-
-    general_info.highlights = user['highlights']
-
-    general_info.country = "United States"
-    #general_info.state = "Texas"
-    #general_info.city = "College Station"
-    general_info.city = user['city']
-    general_info.state = user['state']
-    general_info.emailaddr = "#{first_name}.#{last_name}@example.com"
-    general_info.save!
+    # Create associated GeneralInfo record
+    GeneralInfo.create!(
+      id: user['id'],
+      first_name: first_name,
+      last_name: last_name,
+      user: user_record,  # Associate GeneralInfo with the created User
+      company: company,
+      industry: industry,
+      job_name: job,
+      highlights: highlights,
+      country: country,
+      city: city,
+      state: state,
+      emailaddr: "#{first_name}.#{last_name}@example.com"
+    )
   end
 end
+
+
 
 When(/^I click the button with id "([^"]*)"$/) do |id|
   button = find_by_id(id)
@@ -318,6 +323,28 @@ When("I click on the image with alt text {string}") do |alt_text|
   # Click on the image element
   image.click
 
+end
+
+Given("I store the email {string} for later verification") do |email|
+  @user_email = email
+end
+
+Then("I should receive a confirmation email with a link to confirm my account") do
+  raise "Email not set" if @user_email.nil?
+  open_email(@user_email)
+  expect(current_email).to have_content("Confirm my account")
+end
+
+# Step to follow the confirmation link in the email
+When("I follow the email confirmation link") do
+  # Ensure the email is opened
+  raise "No email found" unless current_email
+
+  # Extract the confirmation link from the email
+  confirmation_link = current_email.body.match(/href="([^"]+)"/)[1]
+
+  # Visit the confirmation link
+  visit confirmation_link
 end
 
   # todo! create a message

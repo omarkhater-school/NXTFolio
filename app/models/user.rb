@@ -5,6 +5,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable,
          :confirmable, :omniauthable, omniauth_providers: [:facebook, :google_oauth2]
 
+  before_create :set_user_key
   # Scope to exclude a specific user from query results
   scope :all_except, ->(user) { where.not(id: user) }
 
@@ -27,4 +28,11 @@ class User < ApplicationRecord
       user.skip_confirmation!      # Skip email confirmation for social logins
     end
   end
+
+  private
+
+  def set_user_key
+    self.userKey = SecureRandom.hex(10) if userKey.blank?
+  end
 end
+

@@ -13,6 +13,8 @@ require 'pry'
 require "selenium-webdriver"
 
 require 'database_cleaner'
+require 'email_spec'
+require 'email_spec/cucumber'
 
 
 if Rails.configuration.use_remote_webdriver

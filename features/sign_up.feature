@@ -19,5 +19,32 @@ Feature: Sign up
     | user[email]                 | test@example.com |
     | user[password]              | Test1234!        |
     | user[password_confirmation] | Test1234!        |
+    
     And I click on "Sign up"
+    And I store the email "test@example.com" for later verification
     Then I should see an email confirmation message
+    And I should receive a confirmation email with a link to confirm my account
+    When I follow the email confirmation link
+    Then I should be on new_general_info
+    When I fill in the following:
+      | first_name | Test        |
+      | last_name  | Testable    |
+      | company    | Test Inc    |
+      | highlights | Detail-oriented professional |
+      | emailaddr  | test@example.com |
+      | city       | Austin      |
+    And I select "Creator" from "general_info_industry"
+    And I select "Designer" from "general_info_job_name"
+    And I select "United States" from "country"
+    And I select "Texas" from "state"
+    And I click on "SAVE AND CONTINUE"
+    Then I should be on the second signup page
+    When I fill in the following:
+      | specialization | some specialization |
+      | profdetails    | some profdetails    |
+      | bio            | some bio            |
+      | experience     | 5                   |
+    And I select "Salary" from "general_info_compensation"
+    And I click on "SAVE and GO TO PROFILE"
+    Then I should be on the profile page
+    And "Test" should be added to the GeneralInfo database

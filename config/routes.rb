@@ -8,8 +8,8 @@ Rails.application.routes.draw do
 
   post '/dm/:id', to: 'room#create_message'
   
-  get '/auth/:provider/callback', to: 'linkedin_profiles#create'
-  resources :linkedin_profiles, only: [:index]
+  get '/auth/linkedin/callback', to: 'linkedin_profiles#create'
+  get '/auth/linkedin', as: :linkedin_auth, to: 'linkedin_profiles#linkedin'
 
   get '/dm', to: 'room#show'
 

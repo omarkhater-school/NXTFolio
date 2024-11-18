@@ -94,6 +94,7 @@ gem "factory_bot_rails"
 #gem 'simplecov-rcov'
 # gem 'bootstrap'
 # gem 'popperjs' 
+gem 'dotenv-rails'
 
 # Fixes the problem of "You are using an old OmniAuth version"
 # gem 'devise', github: 'heartcombo/devise', branch: 'main'

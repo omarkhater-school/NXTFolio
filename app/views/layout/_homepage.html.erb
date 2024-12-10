@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="<%= asset_path "search_button.css" %>">
-<div class="container-fluid custom-container">
+<div class="container-fluid">
   <div class="row">
     <div class="col-md-10 col-md-offset-1">
       <div id="container-mix" class="row _post-container_">
@@ -94,13 +94,17 @@
           <% else %>
             <% @all_galleries = Gallery.all %>
             <% map = {} %>
-            <% @all_galleries.each do |gal| %>
-              <% total = gal.reviews.sum(&:rating).to_i %>
-              <% count = gal.reviews.size %>
-              <% gal.gallery_totalRate ||= total %>
-              <% gal.gallery_totalRator ||= count %>
-              <% if map.size < 50 && (gal.gallery_totalRate / gal.gallery_totalRator >= 3) %>
-                <% map[gal] = gal.gallery_totalRate / gal.gallery_totalRator %>
+            <% if @all_galleries.present? %>
+              <% @all_galleries.each do |gal| %>
+                <% total ||= 0 %> 
+                <% total = gal.reviews.sum { |review| review.rating || 0 }.to_i if gal.reviews.exists? %>
+                <% count ||= 0 %>
+                <% count = gal.reviews&.size || 0 %>
+                <% gal.gallery_totalRate ||= total %>
+                <% gal.gallery_totalRator ||= count %>
+                <% if map.size < 50 && gal.gallery_totalRator > 0 && (gal.gallery_totalRate / gal.gallery_totalRator >= 3) %>
+                  <% map[gal] = gal.gallery_totalRate / gal.gallery_totalRator %>
+                <% end %>
               <% end %>
             <% end %>
             <% sorted_map = map.sort_by { |_, v| -v }.to_h %>
